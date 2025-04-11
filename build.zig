@@ -1,16 +1,19 @@
 const std = @import("std");
+const zcc = @import("compile_commands");
 
 const executable_name = "wc";
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
+    var targets = std.ArrayList(*std.Build.Step.Compile).init(b.allocator);
 
     const exe = b.addExecutable(.{
         .name = executable_name,
         .target = target,
         .optimize = optimize,
     });
+    targets.append(exe) catch @panic("OOM");
 
     const cpp_sources = [_][]const u8{
         "src/main.cpp",
@@ -40,4 +43,5 @@ pub fn build(b: *std.Build) void {
 
     const run_step = b.step("run", "Run the app");
     run_step.dependOn(&run_cmd.step);
+    zcc.createStep(b, "cdb", targets.toOwnedSlice() catch @panic("OOM"));
 }

@@ -10,6 +10,7 @@ struct CountResult {
     size_t words;
     size_t characters;
     size_t bytes;
+    size_t max_line_length;
 };
 
 class WordCounter {

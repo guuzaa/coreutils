@@ -5,6 +5,7 @@ A project to implement GNU coreutils utilities in `C++` and `Zig`. This is an on
 ## Implemented Utilities
 
 - `wc`: Word, line, and byte counting utility
+- `true`: Do nothing, successfully (exit with status 0)  
 
 ## Planned Utilities
 
@@ -25,8 +26,8 @@ The project aims to implement all core utilities, including but not limited to:
 Clone the repository and build using Zig's build system:
 
 ```bash
-git clone https://github.com/guuzaa/wc.git
-cd wc
+git clone https://github.com/guuzaa/coreutils.git
+cd coreutils
 zig build
 ```
 
@@ -34,7 +35,9 @@ The executables will be available in `zig-out/bin/`.
 
 ## Usage
 
-### wc Examples
+
+<details>
+<summary>wc Examples</summary>
 
 Count lines, words, and characters in a file:
 ```bash
@@ -50,6 +53,7 @@ Count words from standard input:
 ```bash
 cat file.txt | wc -w
 ```
+</details>
 
 ## Contributing
 

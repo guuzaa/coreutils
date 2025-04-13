@@ -1,11 +1,11 @@
 const std = @import("std");
 const zcc = @import("compile_commands");
 
-
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
     var targets = std.ArrayList(*std.Build.Step.Compile).init(b.allocator);
+    defer targets.deinit();
 
     const wc_exe = b.addExecutable(.{
         .name = "wc",
@@ -33,6 +33,8 @@ pub fn build(b: *std.Build) void {
 
     b.installArtifact(wc_exe);
 
+    const run_step = b.step("run-wc", "Run the wc app");
+
     const run_cmd = b.addRunArtifact(wc_exe);
     run_cmd.step.dependOn(b.getInstallStep());
 
@@ -40,7 +42,6 @@ pub fn build(b: *std.Build) void {
         run_cmd.addArgs(args);
     }
 
-    const run_step = b.step("run", "Run the app");
     run_step.dependOn(&run_cmd.step);
     zcc.createStep(b, "cdb", targets.toOwnedSlice() catch @panic("OOM"));
 }

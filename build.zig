@@ -66,6 +66,12 @@ pub fn build(b: *std.Build) void {
     }, &[_][]const u8{
         "src/true",
     }).build(b, optimize, target, &targets);
-
+    
+    Executable.init("false", &[_][]const u8{
+        "src/false/main.cpp",
+    }, &[_][]const u8{
+        "src/false",
+    }).build(b, optimize, target, &targets);
+    
     zcc.createStep(b, "cdb", targets.toOwnedSlice() catch @panic("OOM"));
 }

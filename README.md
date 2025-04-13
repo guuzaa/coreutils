@@ -6,6 +6,8 @@ A project to implement GNU coreutils utilities in `C++` and `Zig`. This is an on
 
 - `wc`: Word, line, and byte counting utility
 - `true`: Do nothing, successfully (exit with status 0)  
+- `false`: Do nothing, unsuccessfully (exit with status 1)  
+
 
 ## Planned Utilities
 

@@ -3,13 +3,14 @@
 #include <sstream>
 #include <algorithm>
 #include <cctype>
+#include <format>
 
 namespace wc {
 
 CountResult WordCounter::count_file(const std::filesystem::path& path) {
     std::ifstream file(path);
     if (!file.is_open()) {
-        throw std::runtime_error("Failed to open file: " + path.string());
+        throw std::runtime_error(std::format("Failed to open file: {}", path.string()));
     }
     
     std::stringstream buffer;
@@ -24,13 +25,20 @@ CountResult WordCounter::count_string(std::string_view content) {
 CountResult WordCounter::count_content(std::string_view content) {
     CountResult result{};
     result.bytes = content.size();
+    result.max_line_length = 0;
     
     bool in_word = false;
+    size_t current_line_length = 0;
+    
     for (char c : content) {
         result.characters++;
         
         if (c == '\n') {
             result.lines++;
+            result.max_line_length = std::max(result.max_line_length, current_line_length);
+            current_line_length = 0;
+        } else {
+            current_line_length++;
         }
         
         if (std::isspace(c)) {
@@ -44,6 +52,7 @@ CountResult WordCounter::count_content(std::string_view content) {
     // Count the last line if it doesn't end with a newline
     if (!content.empty() && content.back() != '\n') {
         result.lines++;
+        result.max_line_length = std::max(result.max_line_length, current_line_length);
     }
     
     return result;

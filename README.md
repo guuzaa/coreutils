@@ -1,4 +1,18 @@
-A `wc` like program written by `C++` but built by `Zig`.
+# Coreutils Implementation
+
+A project to implement GNU coreutils utilities in `C++` and `Zig`. This is an ongoing effort to recreate the essential Unix/Linux command-line tools.
+
+## Implemented Utilities
+
+- `wc`: Word, line, and byte counting utility
+
+## Planned Utilities
+
+The project aims to implement all core utilities, including but not limited to:
+- File Management: `ls`, `cp`, `mv`, `rm`, `mkdir`, `cat`, etc.
+- Text Processing: `head`, `tail`, `sort`, `uniq`, etc.
+- System Information: `pwd`, `whoami`, `uname`, etc.
+- And many more...
 
 ## Installation
 
@@ -16,11 +30,11 @@ cd wc
 zig build
 ```
 
-The executable will be available at `zig-out/bin/wc`.
+The executables will be available in `zig-out/bin/`.
 
 ## Usage
 
-### Examples
+### wc Examples
 
 Count lines, words, and characters in a file:
 ```bash
@@ -36,6 +50,14 @@ Count words from standard input:
 ```bash
 cat file.txt | wc -w
 ```
+
+## Contributing
+
+Contributions are welcome! Feel free to:
+- Implement new utilities
+- Improve existing implementations
+- Report bugs
+- Suggest enhancements
 
 ## License
 

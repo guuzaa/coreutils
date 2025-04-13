@@ -1,40 +1,39 @@
 const std = @import("std");
 const zcc = @import("compile_commands");
 
-const executable_name = "wc";
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
     var targets = std.ArrayList(*std.Build.Step.Compile).init(b.allocator);
 
-    const exe = b.addExecutable(.{
-        .name = executable_name,
+    const wc_exe = b.addExecutable(.{
+        .name = "wc",
         .target = target,
         .optimize = optimize,
     });
-    targets.append(exe) catch @panic("OOM");
+    targets.append(wc_exe) catch @panic("OOM");
 
     const cpp_sources = [_][]const u8{
-        "src/main.cpp",
-        "src/wc.cpp",
-        "src/options.cpp",
-        "src/params.cpp",
+        "src/wc/main.cpp",
+        "src/wc/wc.cpp",
+        "src/wc/options.cpp",
+        "src/wc/params.cpp",
     };
 
     for (cpp_sources) |source| {
-        exe.addCSourceFile(.{
+        wc_exe.addCSourceFile(.{
             .file = b.path(source),
             .flags = &[_][]const u8{"-std=c++20"},
         });
     }
 
-    exe.linkLibCpp();
-    exe.addIncludePath(b.path("src"));
+    wc_exe.linkLibCpp();
+    wc_exe.addIncludePath(b.path("src/wc"));
 
-    b.installArtifact(exe);
+    b.installArtifact(wc_exe);
 
-    const run_cmd = b.addRunArtifact(exe);
+    const run_cmd = b.addRunArtifact(wc_exe);
     run_cmd.step.dependOn(b.getInstallStep());
 
     if (b.args) |args| {

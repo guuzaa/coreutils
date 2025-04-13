@@ -64,7 +64,12 @@ int main(int argc, char* argv[]) {
         }
         
         if (options.show_version) {
-            std::cout << "wc (GNU coreutils) 0.1\n";
+            std::cout << "wc 0.1\n"
+                      << "Copyright (C) 2025 guuzaa.\n"
+                      << "License Apache 2.0: https://www.apache.org/licenses/LICENSE-2.0\n"
+                      << "This is free software: you are free to change and redistribute it.\n"
+                      << "There is NO WARRANTY, to the extent permitted by law.\n\n"
+                      << "Written by guuzaa (guuzaa@outlook.com).\n";
             return 0;
         }
         

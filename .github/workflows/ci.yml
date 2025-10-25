@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: mlugg/setup-zig@v1
         with:
-          version: 0.14.0
+          version: 0.15.1
       - run: |
           zig build -Dtarget=x86_64-windows
           zig build -Dtarget=aarch64-windows

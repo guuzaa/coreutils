@@ -14,13 +14,15 @@ const Executable = struct {
         };
     }
 
-    fn build(self: Executable, b: *std.Build, optimize: std.builtin.Mode, target: std.Build.ResolvedTarget, targets: *std.ArrayList(*std.Build.Step.Compile)) void {
+    fn build(self: Executable, b: *std.Build, optimize: std.builtin.OptimizeMode, target: std.Build.ResolvedTarget, targets: *std.ArrayList(*std.Build.Step.Compile)) void {
         const exe = b.addExecutable(.{
             .name = self.name,
-            .target = target,
-            .optimize = optimize,
+            .root_module = b.createModule(.{
+                .target = target,
+                .optimize = optimize,
+            })
         });
-        targets.append(exe) catch @panic("OOM");
+        
         for (self.cpp_sources) |source| {
             exe.addCSourceFile(.{
                 .file = b.path(source),
@@ -32,6 +34,7 @@ const Executable = struct {
             exe.addIncludePath(b.path(include_path));
         }
         b.installArtifact(exe);
+        targets.append(b.allocator, exe) catch @panic("OOM");
         
         const run_cmd_name = std.fmt.allocPrint(b.allocator, "run-{s}", .{self.name}) catch @panic("OOM");
         const run_cmd_info = std.fmt.allocPrint(b.allocator, "Run the {s} app", .{self.name}) catch @panic("OOM");
@@ -49,8 +52,8 @@ const Executable = struct {
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
-    var targets = std.ArrayList(*std.Build.Step.Compile).init(b.allocator);
-    defer targets.deinit();
+    var targets : std.ArrayList(*std.Build.Step.Compile) = .empty;
+    defer targets.deinit(b.allocator);
 
     Executable.init("wc", &[_][]const u8{
         "src/wc/main.cpp",
@@ -73,5 +76,5 @@ pub fn build(b: *std.Build) void {
         "src/false",
     }).build(b, optimize, target, &targets);
     
-    zcc.createStep(b, "cdb", targets.toOwnedSlice() catch @panic("OOM"));
+    _ = zcc.createStep(b, "cdb", targets.toOwnedSlice(b.allocator) catch @panic("OOM"));
 }

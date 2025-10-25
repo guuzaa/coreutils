@@ -21,7 +21,7 @@ The project aims to implement all core utilities, including but not limited to:
 
 ### Prerequisites
 
-- Zig compiler (0.14 recommended)
+- Zig compiler (0.15.1 recommended)
 
 ### Building from Source
 

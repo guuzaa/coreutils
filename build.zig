@@ -14,11 +14,11 @@ const Executable = struct {
         };
     }
 
-    fn build(self: Executable, b: *std.Build, optimize: std.builtin.OptimizeMode, targets: *std.ArrayList(*std.Build.Step.Compile)) void {
+    fn build(self: Executable, b: *std.Build, optimize: std.builtin.OptimizeMode, target: std.Build.ResolvedTarget, targets: *std.ArrayList(*std.Build.Step.Compile)) void {
         const exe = b.addExecutable(.{
             .name = self.name,
             .root_module = b.createModule(.{
-                .target = b.graph.host,
+                .target = target,
                 .optimize = optimize,
             })
         });
@@ -50,6 +50,7 @@ const Executable = struct {
 };
 
 pub fn build(b: *std.Build) void {
+    const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
     var targets : std.ArrayList(*std.Build.Step.Compile) = .empty;
     defer targets.deinit(b.allocator);
@@ -61,19 +62,19 @@ pub fn build(b: *std.Build) void {
         "src/wc/params.cpp",
     }, &[_][]const u8{
         "src/wc",
-    }).build(b, optimize, &targets);
+    }).build(b, optimize, target, &targets);
     
     Executable.init("true", &[_][]const u8{
         "src/true/main.cpp",
     }, &[_][]const u8{
         "src/true",
-    }).build(b, optimize, &targets);
+    }).build(b, optimize, target, &targets);
     
     Executable.init("false", &[_][]const u8{
         "src/false/main.cpp",
     }, &[_][]const u8{
         "src/false",
-    }).build(b, optimize, &targets);
+    }).build(b, optimize, target, &targets);
     
     _ = zcc.createStep(b, "cdb", targets.toOwnedSlice(b.allocator) catch @panic("OOM"));
 }

@@ -1,29 +1,30 @@
 #include "wc.hpp"
+#include "word_count.hpp"
+#include <format>
 #include <fstream>
 #include <sstream>
 #include <algorithm>
 #include <cctype>
-#include <format>
 
 namespace wc {
 
-CountResult WordCounter::count_file(const std::filesystem::path& path) {
-    std::ifstream file(path);
-    if (!file.is_open()) {
-        throw std::runtime_error(std::format("Failed to open file: {}", path.string()));
-    }
-    
+WordCount WordCounter::count(const std::istream& read) {
     std::stringstream buffer;
-    buffer << file.rdbuf();
+    buffer << read.rdbuf();
     return count_string(buffer.str());
 }
 
-CountResult WordCounter::count_string(std::string_view content) {
-    return count_content(content);
+WordCount WordCounter::count_file(const std::filesystem::path& path) {
+    try {
+        std::ifstream file(path);
+        return count(file);
+    } catch (const std::exception& e) {
+        throw std::runtime_error(std::format("Failed to open file: {}", path.string()));
+    }
 }
 
-CountResult WordCounter::count_content(std::string_view content) {
-    CountResult result{};
+WordCount WordCounter::count_string(std::string_view content) {
+    WordCount result{};
     result.bytes = content.size();
     result.max_line_length = 0;
     
@@ -31,7 +32,7 @@ CountResult WordCounter::count_content(std::string_view content) {
     size_t current_line_length = 0;
     
     for (char c : content) {
-        result.characters++;
+        result.chars++;
         
         if (c == '\n') {
             result.lines++;

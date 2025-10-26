@@ -20,6 +20,6 @@ jobs:
           version: 0.15.1
       - run: |
           zig build -Dtarget=x86_64-windows
-          zig build -Dtarget=aarch64-windows
+          zig build -Dtarget=aarch64-linux
           zig build -Dtarget=x86_64-linux
           zig build -Dtarget=aarch64-macos

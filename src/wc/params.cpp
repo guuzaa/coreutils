@@ -1,6 +1,5 @@
 #include "params.hpp"
 #include <iostream>
-#include <filesystem>
 #include <string>
 
 namespace wc {

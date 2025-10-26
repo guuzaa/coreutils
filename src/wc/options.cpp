@@ -1,7 +1,6 @@
 #include "options.hpp"
 #include "params.hpp"
 #include <stdexcept>
-#include <algorithm>
 #include <format>
 
 namespace wc {
@@ -15,9 +14,9 @@ Options OptionParser::parse(int argc, char* argv[]) {
             if (arg.find("=") != std::string::npos) {
                 auto [opt, value] = split_long_option(arg);
                 if (opt == "--total") {
-                    options.total = parse_total_when(value);
+                    options.total = parse_total_when_from_str(value);
                 } else if (opt == "--files0-from") {
-                    options.files0_from = value;
+                    options.files0_from = {value};
                 } else {
                     throw std::runtime_error(std::format("Invalid option with value: {}", opt));
                 }
@@ -30,25 +29,6 @@ Options OptionParser::parse(int argc, char* argv[]) {
             options.files.push_back(arg);
         }
     }
-    
-    // If help or version is requested, ensure no other options or files are present
-    if (options.show_help || options.show_version) {
-        if (options.show_lines || options.show_words || options.show_bytes || 
-            options.show_chars || options.show_max_line_length || !options.files.empty() ||
-            !options.files0_from.empty()) {
-            throw std::runtime_error("Error: --help and -V/--version cannot be combined with other options or files.");
-        }
-        return options;
-    }
-    
-    // If no options were specified (and help/version wasn't requested), show all counts
-    if (!options.show_lines && !options.show_words && !options.show_bytes && 
-        !options.show_chars && !options.show_max_line_length) {
-        options.show_lines = true;
-        options.show_words = true;
-        options.show_bytes = true;
-    }
-    
     return options;
 }
 
@@ -60,7 +40,7 @@ std::pair<std::string, std::string> OptionParser::split_long_option(const std::s
     return {opt.substr(0, pos), opt.substr(pos + 1)};
 }
 
-TotalWhen OptionParser::parse_total_when(const std::string& value) {
+TotalWhen parse_total_when_from_str(std::string_view value) {
     if (value == "auto") return TotalWhen::Auto;
     if (value == "always") return TotalWhen::Always;
     if (value == "only") return TotalWhen::Only;
@@ -68,7 +48,7 @@ TotalWhen OptionParser::parse_total_when(const std::string& value) {
     throw std::runtime_error(std::format("Invalid value for --total: {}", value));
 }
 
-void OptionParser::parse_option(const std::string& opt, Options& options) {
+void OptionParser::parse_option(std::string_view opt, Options& options) {
     for (char c : opt.substr(1)) {
         bool found = false;
         for (const auto& param : COMMAND_PARAMS) {
@@ -103,7 +83,7 @@ void OptionParser::parse_option(const std::string& opt, Options& options) {
     }
 }
 
-void OptionParser::parse_long_option(const std::string& opt, Options& options) {
+void OptionParser::parse_long_option(std::string_view opt, Options& options) {
     bool found = false;
     for (const auto& param : COMMAND_PARAMS) {
         if (opt == param.long_name) {
@@ -128,6 +108,19 @@ void OptionParser::parse_long_option(const std::string& opt, Options& options) {
     }
     if (!found) {
         throw std::runtime_error(std::format("Invalid option: {}", opt));
+    }
+}
+
+bool is_total_row_visible(TotalWhen when, size_t num_inputs) {
+    switch (when) {
+        case TotalWhen::Auto:
+            return num_inputs > 1;
+        case TotalWhen::Always:
+            return true;
+        case TotalWhen::Only:
+            return true;
+        case TotalWhen::Never:
+            return false;
     }
 }
 

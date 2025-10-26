@@ -2,7 +2,6 @@
 #include <format>
 #include <filesystem>
 #include <ostream>
-#include <sstream>
 #include <fstream>
 #include "wc.hpp"
 #include "options.hpp"
@@ -78,25 +77,30 @@ int main(int argc, char* argv[]) {
         // Handle files0-from option
         std::vector<std::string> files_to_process = options.files;
         if (options.files0_from.has_value()) {
-            // TODO support stdin
-            std::ifstream file_list(options.files0_from.value().as_str());
-            if (!file_list.is_open()) {
-                throw std::runtime_error(std::format("Failed to open file list: {}", options.files0_from.value().as_str()));
-            }
-            
-            std::string line;
-            while (std::getline(file_list, line, '\0')) {
-                if (!line.empty()) {
-                    files_to_process.push_back(line);
+            if (!options.files0_from.value().is_stdin()) {
+                auto file_list = std::ifstream(options.files0_from.value().as_str());
+                if (!file_list.is_open()) {
+                    throw std::runtime_error(std::format("Failed to open file list: {}", options.files0_from.value().as_str()));
+                }
+                std::string line;
+                while (std::getline(file_list, line, '\0')) {
+                    if (!line.empty()) {
+                        files_to_process.push_back(line);
+                    }
+                }
+            } else {
+                std::string line;
+                while (std::getline(std::cin, line, '\0')) {
+                    if (!line.empty()) {
+                        files_to_process.push_back(line);
+                    }
                 }
             }
         }
         
         // If no files specified, read from stdin
         if (files_to_process.empty()) {
-            std::stringstream buffer;
-            buffer << std::cin.rdbuf();
-            auto result = wc::WordCounter::count_string(buffer.str());
+            auto result = wc::WordCounter::count(std::cin);
             std::cout << format_output(result, options) << std::endl;
             return 0;
         }

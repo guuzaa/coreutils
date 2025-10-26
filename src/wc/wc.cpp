@@ -1,26 +1,27 @@
 #include "wc.hpp"
+#include "options.hpp"
 #include "word_count.hpp"
-#include <format>
 #include <fstream>
 #include <sstream>
 #include <algorithm>
 #include <cctype>
+#include <iostream>
 
 namespace wc {
+    
+WordCount WordCounter::count(const Input &input) {
+    if (input.is_stdin()) {
+        return WordCounter::count_stream(std::cin);
+    } else {
+        std::ifstream file(input.as_str());
+        return count_stream(file);
+    }
+}
 
-WordCount WordCounter::count(const std::istream& read) {
+WordCount WordCounter::count_stream(const std::istream& read) {
     std::stringstream buffer;
     buffer << read.rdbuf();
     return count_string(buffer.str());
-}
-
-WordCount WordCounter::count_file(const std::filesystem::path& path) {
-    try {
-        std::ifstream file(path);
-        return count(file);
-    } catch (const std::exception& e) {
-        throw std::runtime_error(std::format("Failed to open file: {}", path.string()));
-    }
 }
 
 WordCount WordCounter::count_string(std::string_view content) {

@@ -1,8 +1,6 @@
 #include <iostream>
 #include <format>
-#include <filesystem>
 #include <ostream>
-#include <fstream>
 #include "wc.hpp"
 #include "options.hpp"
 #include "params.hpp"
@@ -74,52 +72,22 @@ int main(int argc, char* argv[]) {
             return 0;
         }
         
-        // Handle files0-from option
-        std::vector<std::string> files_to_process = options.files;
-        if (options.files0_from.has_value()) {
-            if (!options.files0_from.value().is_stdin()) {
-                auto file_list = std::ifstream(options.files0_from.value().as_str());
-                if (!file_list.is_open()) {
-                    throw std::runtime_error(std::format("Failed to open file list: {}", options.files0_from.value().as_str()));
-                }
-                std::string line;
-                while (std::getline(file_list, line, '\0')) {
-                    if (!line.empty()) {
-                        files_to_process.push_back(line);
-                    }
-                }
-            } else {
-                std::string line;
-                while (std::getline(std::cin, line, '\0')) {
-                    if (!line.empty()) {
-                        files_to_process.push_back(line);
-                    }
-                }
-            }
-        }
-        
-        // If no files specified, read from stdin
-        if (files_to_process.empty()) {
-            auto result = wc::WordCounter::count(std::cin);
-            std::cout << format_output(result, options) << std::endl;
-            return 0;
-        }
-
+        auto inputs = wc::Inputs(argc, argv);
         wc::WordCount totals{};
         // Process each file
-        for (const auto& file : files_to_process) {
-            auto result = wc::WordCounter::count_file(file);
+        for (const auto& file : inputs.array()) {
+            auto result = wc::WordCounter::count(file);
             // Update totals
             totals += result;
             
             // Print individual file results if not in 'only' mode
             if (options.total != wc::TotalWhen::Only) {
-                std::cout << format_output(result, options, file) << '\n';
+                std::cout << format_output(result, options, file.as_str()) << '\n';
             }
         }
 
         // Handle total line based on the --total option
-        if (wc::is_total_row_visible(options.total, files_to_process.size())) {
+        if (wc::is_total_row_visible(options.total, inputs.size())) {
             std::string_view total_label = (options.total == wc::TotalWhen::Only) ? "" : "total";
             std::cout << format_output(totals, options, total_label, true) << '\n';
         }

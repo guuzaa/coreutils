@@ -18,8 +18,11 @@ jobs:
       - uses: mlugg/setup-zig@v2
         with:
           version: 0.15.1
-      - run: |
+      - name: Cross Compilation
+        run: |
           zig build -Dtarget=x86_64-windows
           zig build -Dtarget=aarch64-linux
           zig build -Dtarget=x86_64-linux
           zig build -Dtarget=aarch64-macos
+      - name: Test
+        run: zig build test
